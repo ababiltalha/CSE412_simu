@@ -5,7 +5,7 @@ NONE = 0
 ARRIVAL = 1
 DEPARTURE = 2
 
-InFilePath = "IOs/io2/in.txt"
+InFilePath = "IOs/io3/in.txt"
 
 class SingleServerQueueingSystem:
     def __init__(self, InFile, ResultsFile, EventOrdersFile, NumEvents=2):
@@ -108,13 +108,10 @@ class SingleServerQueueingSystem:
             self.TimeArrival[self.NumInQ] = self.Time
 
         else:
-            delay = 0.0
-            self.TotalOfDelays = self.TotalOfDelays + delay
-
             self.NumCustsDelayed = self.NumCustsDelayed + 1
             self.EventOrdersFile.write("\n---------No. of customers delayed: {}--------\n\n".format(self.NumCustsDelayed))
             self.ServerBusy = True
-        self.TimeNextEvent[DEPARTURE] = self.Time + self.exponential(self.MeanService)
+            self.TimeNextEvent[DEPARTURE] = self.Time + self.exponential(self.MeanService)
 
     def depart(self):
         if self.NumInQ == 0:
@@ -140,11 +137,11 @@ class SingleServerQueueingSystem:
         self.ResultsFile.write("Time simulation ended: {:.6f} minutes\n".format(self.Time))
 
     def updateTimeAvgStats(self):
-        TimeSinceLastEvent = self.Time - self.TimeLastEvent
+        timeSinceLastEvent = self.Time - self.TimeLastEvent
         self.TimeLastEvent = self.Time
 
-        self.AreaNumInQ = self.AreaNumInQ + self.NumInQ * TimeSinceLastEvent
-        self.AreaServerStatus = self.AreaServerStatus + self.ServerBusy * TimeSinceLastEvent
+        self.AreaNumInQ = self.AreaNumInQ + self.NumInQ * timeSinceLastEvent
+        self.AreaServerStatus = self.AreaServerStatus + self.ServerBusy * timeSinceLastEvent
 
     def exponential(self, mean):
         return -mean * math.log(self.lcgrand.lcgrand(1))
