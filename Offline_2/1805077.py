@@ -135,14 +135,13 @@ class InventorySystem:
         avgOrderingCost = self.totalOrderingCost / self.numMonths
         avgHoldingCost = self.areaHolding * self.holdingCost / self.numMonths
         avgShortageCost = self.areaShortage * self.shortageCost / self.numMonths
-        str = "(%2d,%3d)              %6.2f              %6.2f               %6.2f               %6.2f\n\n" % (self.smalls, self.bigs, avgOrderingCost + avgHoldingCost + avgShortageCost, avgOrderingCost, avgHoldingCost, avgShortageCost)
+        str = "(%2d,%3d) %19.2f %19.2f %19.2f %19.2f\n\n" % (self.smalls, self.bigs, avgOrderingCost + avgHoldingCost + avgShortageCost, avgOrderingCost, avgHoldingCost, avgShortageCost)
         self.outFile.write(str)
         
     
     def simulate(self):
         for i in range(self.numPolicies):
             self.simulatePolicy(self.policies[i][0], self.policies[i][1])
-            # print(self.simTime)
         self.outFile.write("--------------------------------------------------------------------------------------------------")        
 
     def simulatePolicy(self, s, S):
@@ -158,10 +157,10 @@ class InventorySystem:
                 self.arrival()
             elif self.nextEventType == DEMAND:
                 self.demand()
-            elif self.nextEventType == EVALUATE:
-                self.evaluate()
             elif self.nextEventType == END:
                 self.report()
+            elif self.nextEventType == EVALUATE:
+                self.evaluate()
                 
             if self.nextEventType == END:
                 break
@@ -181,11 +180,12 @@ class InventorySystem:
         self.timeNextEvent[EVALUATE] = 0.0
         
     def arrival(self):
-        self.invLevel = self.invLevel + self.amount
+        self.invLevel += self.amount
         self.timeNextEvent[ARRIVAL] = 1.0e+30
         
     def demand(self):
-        self.invLevel = self.invLevel - self.randomInt(self.probDistribDemand)
+        demand = self.randomInt(self.probDistribDemand)
+        self.invLevel -= demand
         self.timeNextEvent[DEMAND] = self.simTime + self.exponential(self.meanInterDemand)
         
     def randomInt(self, probDistrib):
@@ -193,7 +193,7 @@ class InventorySystem:
         i = 0
         while u > probDistrib[i]:
             i = i + 1
-        return i
+        return i + 1
     
     def exponential(self, mean):
         return -mean * math.log(self.generator.lcgrand(1))
@@ -216,7 +216,6 @@ class InventorySystem:
             self.areaShortage -= self.invLevel * timeSinceLastEvent
         elif self.invLevel > 0:
             self.areaHolding += self.invLevel * timeSinceLastEvent
-        
 
     def timing(self):
         minTimeNextEvent = 1.0e+29
